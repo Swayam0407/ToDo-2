@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo List</title>
+  <link rel="stylesheet" href="./index.css" />
+</head>
+<body>
+  <div class="container">
+    <p id="head">Todo List</p>
+    <div class="top">
+      <div class="input-wrapper">
+        <input id="main" type="text" placeholder="Enter To-Do"/>
+        <button id="btn" onclick="addTodo()"><img id="plus" src="plus.svg" alt="Add"></button>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div id="todos"></div>
+    </div>
+  </div>
+
+  <script>
+    let todos = [];
+
+    function addTodo() {
+      let inputValue = document.querySelector("input").value.trim();
+
+      if (inputValue === "") {
+        alert("Please enter a Todo!");
+      } else {
+        todos.push({
+          title: inputValue,
+          isEditing: false,
+          isChecked: false
+        });
+        render();
+      }
+
+      document.querySelector("input").value = "";
+    }
+
+    function editTodo(index) {
+      todos[index].isEditing = true;
+      render();
+    }
+
+    function saveTodo(index) {
+      const newTitle = document.querySelector(`#edit-input-${index}`).value;
+      todos[index].title = newTitle;
+      todos[index].isEditing = false;
+      render();
+    }
+
+    function deleteTodo(index) {
+      todos.splice(index, 1);
+      render();
+    }
+
+    function createTodoComponent(todo, index) {
+      const div = document.createElement("div");
+      div.className = "todo-item";
+
+      // Create custom checkbox
+      const checkboxContainer = document.createElement("div");
+      checkboxContainer.className = "custom-checkbox";
+      checkboxContainer.innerHTML = `
+        <input type="checkbox" id="checkbox-${index}" ${todo.isChecked ? 'checked' : ''} />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="20" height="20" rx="4" stroke="#8707ff" stroke-width="2"/>
+          <path d="M6 12l4 4 8-8" stroke="#8707ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+
+      checkboxContainer.addEventListener("click", function () {
+        const checkbox = document.getElementById(`checkbox-${index}`);
+        checkbox.checked = !checkbox.checked;
+        todos[index].isChecked = checkbox.checked;
+      });
+
+      // Create todo content
+      if (todo.isEditing) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = todo.title;
+        input.id = `edit-input-${index}`;
+
+        const saveButton = document.createElement("button");
+        saveButton.innerHTML = "Save";
+        saveButton.addEventListener("click", function () {
+          saveTodo(index);
+        });
+
+        div.appendChild(checkboxContainer);
+        div.appendChild(input);
+        div.appendChild(saveButton);
+      } else {
+        const p = document.createElement("p");
+        p.innerHTML = todo.title;
+
+        const editButton = document.createElement("button");
+        editButton.innerHTML = "Edit";
+        editButton.addEventListener("click", function () {
+          editTodo(index);
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.innerHTML = "Delete";
+        deleteButton.addEventListener("click", function () {
+          deleteTodo(index);
+        });
+
+        div.appendChild(checkboxContainer);
+        div.appendChild(p);
+        div.appendChild(editButton);
+        div.appendChild(deleteButton);
+      }
+
+      return div;
+    }
+
+    function render() {
+      document.getElementById("todos").innerHTML = "";
+
+      const bottomContainer = document.querySelector(".bottom");
+      if (todos.length === 0) {
+        bottomContainer.style.border = "none";
+      } else {
+        bottomContainer.style.border = "4px solid white";
+      }
+
+      for (let i = 0; i < todos.length; i++) {
+        const element = createTodoComponent(todos[i], i);
+        document.querySelector("#todos").appendChild(element);
+      }
+    }
+  </script>
+</body>
+</html>
